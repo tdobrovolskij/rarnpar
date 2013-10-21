@@ -256,7 +256,7 @@ show_help() {
 	echo -e "\t-U\t\tUpload processed files automatically."
 	echo -e "\t-v <MB>\t\tRar volume size in megabytes. Default:  \033[1m50\033[0m"
 	echo -e "\t-V\t\tBe verbose."
-	echo -e "\-X <path>\tFull path to newsmangler eXecutable.\n"
+	echo -e "\t-X <path>\tFull path to newsmangler eXecutable.\n"
 }
 # Display help if no options were provided
 if [ "$#" == "0" ]
@@ -578,9 +578,20 @@ then
 				cp -ut "${OUTPUT_DIR}${FILENAME}"/ $ADD_TO_PAR > /dev/null 2>&1
 			fi
 			# Upload files with newsmangler if needed
-			if [ "$UPLOAD" = "1" ]
+			if (( $UPLOAD==1 ))
 			then
+				# We want to skip nfo in cryptomode, because it shows the real file name
+				if (( $CRYPTMODE==1 ))
+				then
+					mv "${OUTPUT_DIR}${FILENAME}"/"${ORIGINAL_NAME}.nfo" /tmp/
+				fi
 				"$PATH_TO_MANGLER" "${OUTPUT_DIR}${FILENAME}"
+				if (( $CRYPTMODE==1 ))
+				then
+					mv /tmp/"${ORIGINAL_NAME}.nfo" "${OUTPUT_DIR}${FILENAME}"/
+				fi
+				# move nzb to the output directory
+				[ -e "newsmangler_${FILENAME}.nzb" ] && mv "newsmangler_${FILENAME}.nzb" "${OUTPUT_DIR}${FILENAME}"/"${FILENAME}.nzb"
 			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
@@ -674,9 +685,20 @@ else
 				cp -ut "${OUTPUT_DIR}${FILENAME}"/ $ADD_TO_PAR > /dev/null 2>&1
 			fi
 			# Upload files with newsmangler if needed
-			if [ "$UPLOAD" = "1" ]
+			if (( $UPLOAD==1 ))
 			then
+				# We want to skip nfo in cryptomode, because it shows the real file name
+				if (( $CRYPTMODE==1 ))
+				then
+					mv "${OUTPUT_DIR}${FILENAME}"/"${ORIGINAL_NAME}.nfo" /tmp/
+				fi
 				"$PATH_TO_MANGLER" "${OUTPUT_DIR}${FILENAME}"
+				if (( $CRYPTMODE==1 ))
+				then
+					mv /tmp/"${ORIGINAL_NAME}.nfo" "${OUTPUT_DIR}${FILENAME}"/
+				fi
+				# move nzb to the output directory
+				[ -e "newsmangler_${FILENAME}.nzb" ] && mv "newsmangler_${FILENAME}.nzb" "${OUTPUT_DIR}${FILENAME}"/"${FILENAME}.nzb"
 			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
