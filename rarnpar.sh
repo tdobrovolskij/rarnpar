@@ -1,6 +1,7 @@
 #!/bin/bash
 #(c) Tadeus Dobrovolskij, 2011-2013
 #Script to rar and par your usenet uploads
+# 2013-10-21: Added newsmangler support; version 0.80
 # 2013-10-04: Added config file support; version 0.78
 # 2013-09-04: Added -PR option; version 0.77
 # 2013-08-30: .tmp suffix won't be added, when output directory was specified; version 0.76
@@ -51,7 +52,7 @@ defaults() {
 	# Rar volume size in megabytes 
 	VOLUME_SIZE=50
 	# Par block size
-	BLOCK_SIZE=384000
+	BLOCK_SIZE=768000
 	# Par block count; unusable together with size
 	BLOCK_COUNT=0
 	# Par recovery %
@@ -136,6 +137,10 @@ defaults() {
 	ORIGINAL_RARC=
 	# Path to config file
 	CONFIG=
+	# Do we need to upload all the files automatically?
+	UPLOAD=0
+	# In case if newsmangler isn't in the PATH - user needs to specify where to find it
+	PATH_TO_MANGLER=
 }
 # Generate .nfo header
 generate_nfo_header() {
@@ -213,7 +218,7 @@ genpasswd() {
 
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
-	echo "Rar&Par script version 0.78. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
+	echo "Rar&Par script version 0.80. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
 	echo -e "Comes with ABSOLUTELY NO WARRANTY.\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
@@ -248,8 +253,10 @@ show_help() {
 	echo -e "\t--sfv\t\tCreate SFV(Simple File Verification) file."
 	echo -e	"\t--subdir\tRar&Par not the files, but subdirectories"
 	echo -e "\t-u\t\tUniform par2 recovery file size."
+	echo -e "\t-U\t\tUpload processed files automatically."
 	echo -e "\t-v <MB>\t\tRar volume size in megabytes. Default:  \033[1m50\033[0m"
-	echo -e "\t-V\t\tBe verbose.\n"
+	echo -e "\t-V\t\tBe verbose."
+	echo -e "\-X <path>\tFull path to newsmangler eXecutable.\n"
 }
 # Display help if no options were provided
 if [ "$#" == "0" ]
@@ -376,6 +383,10 @@ while [[ $1 = -* ]]; do
 		 UNIFORM=1
 		 shift
 		 ;;
+		-U)
+		 UPLOAD=1
+		 shift
+		 ;;
 		-v)
 		 VOLUME_SIZE="$2"
 		 shift 2
@@ -383,6 +394,10 @@ while [[ $1 = -* ]]; do
 		-V)
 		 VERBOSE=1
 		 shift
+		 ;;
+		-X)
+		 PATH_TO_MANGLER="$2"
+		 shift 2
 		 ;;
 		*)
 		 echo "Error: Unknown option: $1" >&2
@@ -428,6 +443,21 @@ fi
 if [ "$CREATE_SFV" = "1" ]
 then
         type cksfv > /dev/null 2>&1 || { echo "Error: cksfv tool not found! Can't create .sfv!"; exit 1; }
+fi
+
+# Check if newsmangler binary was specified
+if (( $UPLOAD==1 ))
+then
+	if [ -z "$PATH_TO_MANGLER" ] && ! type mangler.py > /dev/null 2>&1
+	then
+		echo "Error: Please specify the path to newsmangler executable file."
+		echo "Upload not possible. Quiting..."
+		exit 1
+	fi
+	if [ -z "$PATH_TO_MANGLER" ] && type mangler.py > /dev/null 2>&1
+	then
+		PATH_TO_MANGLER="mangler.py"
+	fi
 fi
 
 # If starting directory is specified - move there
@@ -547,6 +577,11 @@ then
 			then
 				cp -ut "${OUTPUT_DIR}${FILENAME}"/ $ADD_TO_PAR > /dev/null 2>&1
 			fi
+			# Upload files with newsmangler if needed
+			if [ "$UPLOAD" = "1" ]
+			then
+				"$PATH_TO_MANGLER" "${OUTPUT_DIR}${FILENAME}"
+			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
 				mv "${OUTPUT_DIR}${FILENAME}"/* "${OUTPUT_DIR}"
@@ -637,6 +672,11 @@ else
 			if [ -n "$ADD_TO_PAR" ]
 			then
 				cp -ut "${OUTPUT_DIR}${FILENAME}"/ $ADD_TO_PAR > /dev/null 2>&1
+			fi
+			# Upload files with newsmangler if needed
+			if [ "$UPLOAD" = "1" ]
+			then
+				"$PATH_TO_MANGLER" "${OUTPUT_DIR}${FILENAME}"
 			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
