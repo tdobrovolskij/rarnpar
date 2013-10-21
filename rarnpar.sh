@@ -503,7 +503,7 @@ fi
 if (( $SUBDIRECTORIES==1 ))
 then
 	RARC="${RARC} -r"
-	# We need some other directory name, beucause otherwise we will encounter conflicts
+	# We need some other directory name, because otherwise we will encounter conflicts
 	if [ -z $NAME_SUFFIX ] && [ -z $NAME_PREFIX ]; then NAME_SUFFIX="-rnp"; fi
 	if (($(find -L ${MAXDEPTH} -type d -name '*' ! -name '.*' | wc -l) > 0)); then
 		while read DIRECTORY_TO_PROCESS; do
