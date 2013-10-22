@@ -591,7 +591,8 @@ then
 					mv /tmp/"${ORIGINAL_NAME}.nfo" "${OUTPUT_DIR}${FILENAME}"/
 				fi
 				# move nzb to the output directory
-				[ -e "newsmangler_${FILENAME}.nzb" ] && mv "newsmangler_${FILENAME}.nzb" "${OUTPUT_DIR}${FILENAME}"/"${FILENAME}.nzb"
+				NEWSMANGLER_NZB=$(echo -n "newsmangler_${FILENAME}.nzb" | sed -e 's/ /_/g' )
+				[ -e $NEWSMANGLER_NZB ] && mv $NEWSMANGLER_NZB "${OUTPUT_DIR}${FILENAME}"/${NEWSMANGLER_NZB#newsmangler_}
 			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
@@ -698,7 +699,8 @@ else
 					mv /tmp/"${ORIGINAL_NAME}.nfo" "${OUTPUT_DIR}${FILENAME}"/
 				fi
 				# move nzb to the output directory
-				[ -e "newsmangler_${FILENAME}.nzb" ] && mv "newsmangler_${FILENAME}.nzb" "${OUTPUT_DIR}${FILENAME}"/"${FILENAME}.nzb"
+				NEWSMANGLER_NZB=$(echo -n "newsmangler_${FILENAME}.nzb" | sed -e 's/ /_/g' )
+				[ -e $NEWSMANGLER_NZB ] && mv $NEWSMANGLER_NZB "${OUTPUT_DIR}${FILENAME}"/${NEWSMANGLER_NZB#newsmangler_}
 			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
