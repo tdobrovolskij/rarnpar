@@ -1,7 +1,23 @@
 #!/bin/bash
-#(c) Tadeus Dobrovolskij, 2011-2013
-#Script to rar and par your usenet uploads
+########################################################################
+# Rarnpar - script to rar and par your usenet uploads
+# Copyright (c) 2011-2013, Tadeus Dobrovolskij
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+########################################################################
 # 2013-10-21: Added newsmangler support; version 0.80
+# 2013-10-18: GPL v2 Licence added.
 # 2013-10-04: Added config file support; version 0.78
 # 2013-09-04: Added -PR option; version 0.77
 # 2013-08-30: .tmp suffix won't be added, when output directory was specified; version 0.76
@@ -219,7 +235,7 @@ genpasswd() {
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
 	echo "Rar&Par script version 0.80. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
-	echo -e "Comes with ABSOLUTELY NO WARRANTY.\n"
+	echo -e "Comes with ABSOLUTELY NO WARRANTY. Distributed under GPL v2 license(\033[4mhttp://www.gnu.org/licenses/gpl-2.0.txt\033[0m).\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
 	echo "For the full functionality you will also need: coreutils(present on almost any distro), cksfv and mediainfo."
