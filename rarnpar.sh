@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ########################################################################
+# 2013-10-24: Fixed minor bug by cleaning up the old code; version 0.81
 # 2013-10-21: Added newsmangler support; version 0.80
 # 2013-10-18: GPL v2 Licence added.
 # 2013-10-04: Added config file support; version 0.78
@@ -234,7 +235,7 @@ genpasswd() {
 
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
-	echo "Rar&Par script version 0.80. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
+	echo "Rar&Par script version 0.81. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
 	echo -e "Comes with ABSOLUTELY NO WARRANTY. Distributed under GPL v2 license(\033[4mhttp://www.gnu.org/licenses/gpl-2.0.txt\033[0m).\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
@@ -566,14 +567,7 @@ then
 			# Cryptorenaming
 			if (( $CRYPTMODE==1 ))
 			then
-				ORIGINAL_DIR="$DIRECTORY_TO_PROCESS"
 				FILENAME=$(echo -n "$FILENAME" | ${ALGO}sum | sed -e 's/[[:space:]].*//')
-				# We need to rename directory when output dir = current dir
-				if [ -z $PASSWORD ] && [ -d "${OUTPUT_DIR}${FILENAME}" ]
-				then
-					mv "$DIRECTORY_TO_PROCESS" "$FILENAME.tmp"
-					DIRECTORY_TO_PROCESS="$FILENAME.tmp"
-				fi
 			fi
 			mkdir "${OUTPUT_DIR}${FILENAME}"
 			[ "$CRYPTMODE" = "1" ] && generate_nfo_header > "${OUTPUT_DIR}${FILENAME}"/"${ORIGINAL_NAME}.nfo"
@@ -615,7 +609,6 @@ then
 				mv "${OUTPUT_DIR}${FILENAME}"/* "${OUTPUT_DIR}"
 				rmdir "${OUTPUT_DIR}${FILENAME}"/
 			fi
-			[ "$CRYPTMODE" = "1" ] && [ -z "$PASSWORD" ] && [ -d "${OUTPUT_DIR}${FILENAME}" ] && mv "$DIRECTORY_TO_PROCESS" "$ORIGINAL_DIR"
 		done < <(find -L ${MAXDEPTH} -type d -name "*" ! -name ".*" | sed -e 's/^\.//g' -e 's/^\///g')
 	else
 		echo "Error: No directories to process!"
