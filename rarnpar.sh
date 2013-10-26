@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ########################################################################
+# 2013-10-26: Added cleanup function in case of unexpected exit; version 0.82
 # 2013-10-24: Fixed minor bug by cleaning up the old code; version 0.81
 # 2013-10-21: Added newsmangler support; version 0.80
 # 2013-10-18: GPL v2 Licence added.
@@ -44,11 +45,18 @@
 # 2012-09-16: Added normal prerequisites check; Can now rarnpar subdirectories; Version bump to 0.3
 # 2011-08-20: Initial public release; version 0.22
 # TODO: remove the need of default suffix and fix the problems with a processing of files without extension
+########################################################################
+# ERRORCODES
+########################################################################
+# 100 - recieved SIGINT or SIRTERM; quit after invoking cleanup function
+# 99  - par2 or rar not found
+# 10  - nothing to process
+# 1   - all other errors atm
 
 # Simple check to find out if you have installed needed tools.
-type par2 > /dev/null 2>&1 || { echo "Error: par2 not found!"; exit 1; }
+type par2 > /dev/null 2>&1 || { echo "Error: par2 not found!"; exit 99; }
 
-type rar > /dev/null 2>&1 || { echo "Error: rar not found!"; exit 1; }
+type rar > /dev/null 2>&1 || { echo "Error: rar not found!"; exit 99; }
 type md5sum > /dev/null 2>&1 || { echo "WARNING: md5sum not found! md5 cryptorenaming won't work!"; }
 type sha1sum > /dev/null 2>&1 || { echo "WARNING: sha1sum not found! sha1 cryptorenaming won't work!"; }
 type sha224sum > /dev/null 2>&1 || { echo "WARNING: sha224sum not found! sha224 cryptorenaming won't work!"; }
@@ -235,7 +243,7 @@ genpasswd() {
 
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
-	echo "Rar&Par script version 0.81. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
+	echo "Rar&Par script version 0.82. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
 	echo -e "Comes with ABSOLUTELY NO WARRANTY. Distributed under GPL v2 license(\033[4mhttp://www.gnu.org/licenses/gpl-2.0.txt\033[0m).\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
@@ -275,12 +283,20 @@ show_help() {
 	echo -e "\t-V\t\tBe verbose."
 	echo -e "\t-X <path>\tFull path to newsmangler eXecutable.\n"
 }
+# This function is used to remove incomplete files in case script quit unexpectedly
+cleanup() {
+	echo "Something went wrong. Removing unfinished jobs..."
+	rm -rf "${OUTPUT_DIR}${FILENAME}"
+	exit 100
+}
 # Display help if no options were provided
 if [ "$#" == "0" ]
 then
 	show_help
 	exit
 fi
+# Invoke cleanup funciton if we've received SIGINT or SIGTERM
+trap cleanup INT TERM
 # Initialize variables and set them to the default values
 defaults
 # Options parser. Checks options beginning with a dash("-") symbol.
@@ -612,7 +628,7 @@ then
 		done < <(find -L ${MAXDEPTH} -type d -name "*" ! -name ".*" | sed -e 's/^\.//g' -e 's/^\///g')
 	else
 		echo "Error: No directories to process!"
-		exit 1
+		exit 10
 	fi
 else
 	RARC="${RARC} -ep"
@@ -724,7 +740,7 @@ else
 		done < <(find . ${MAXDEPTH} -type f \( ! -iname ".*" ${EXCLUDE_LIST}\) -size +${MINIMUMS}M | sed -e 's/^\.//g' -e 's/^\///g')
 		else
 			echo "Error: No files to process!"
-			exit 1
+			exit 10
 	fi
 fi
 if [ -n "$STARTING_DIR" ]
