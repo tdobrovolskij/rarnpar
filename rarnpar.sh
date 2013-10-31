@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ########################################################################
+# 2013-10-31: Removed misleading "broken pipe" messages in genpasswd function. version 0.84
 # 2013-10-31: Set password option was broken. Fixed; version 0.83
 # 2013-10-26: Added cleanup function in case of unexpected exit; version 0.82
 # 2013-10-24: Fixed minor bug by cleaning up the old code; version 0.81
@@ -236,7 +237,7 @@ genpasswd() {
 			echo "ERROR: Password length was not specified."
 			exit 1
 		fi
-		PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c $PASSWORD_LENGTH)
+		PASSWORD=$(cat /dev/urandom 2> /dev/null | tr -dc '[:alnum:]' 2> /dev/null | head -c $PASSWORD_LENGTH)
 		echo "Your password for the current rar: $PASSWORD"
 		RARC="${ORIGINAL_RARC} -hp${PASSWORD}"
 	fi
@@ -244,7 +245,7 @@ genpasswd() {
 
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
-	echo "Rar&Par script version 0.83. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
+	echo "Rar&Par script version 0.84. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
 	echo -e "Comes with ABSOLUTELY NO WARRANTY. Distributed under GPL v2 license(\033[4mhttp://www.gnu.org/licenses/gpl-2.0.txt\033[0m).\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
