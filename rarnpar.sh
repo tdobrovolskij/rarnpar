@@ -16,7 +16,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ########################################################################
-# 2013-10-31: Set password option was broken. Fixed; version 0.83
 # 2013-10-26: Added cleanup function in case of unexpected exit; version 0.82
 # 2013-10-24: Fixed minor bug by cleaning up the old code; version 0.81
 # 2013-10-21: Added newsmangler support; version 0.80
@@ -244,7 +243,7 @@ genpasswd() {
 
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
-	echo "Rar&Par script version 0.83. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
+	echo "Rar&Par script version 0.82. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
 	echo -e "Comes with ABSOLUTELY NO WARRANTY. Distributed under GPL v2 license(\033[4mhttp://www.gnu.org/licenses/gpl-2.0.txt\033[0m).\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
@@ -544,7 +543,7 @@ if (( $OLDRAR==1 )); then
 fi
 
 # Do we need to password protect files?
-if [ -n "$PASSWORD" ] || (( $RND_PASSWD > 0 ))
+if [ -n "$PASSWORD" ] && [ -z "$RND_PASSWD" ]
 then
 	RARC="${RARC} -hp${PASSWORD}"
 fi
