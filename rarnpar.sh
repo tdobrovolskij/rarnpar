@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ########################################################################
+# 2013-11-02: Sanguinews is now supported. version 0.85
 # 2013-10-31: Removed misleading "broken pipe" messages in genpasswd function. version 0.84
 # 2013-10-31: Set password option was broken. Fixed; version 0.83
 # 2013-10-26: Added cleanup function in case of unexpected exit; version 0.82
@@ -166,8 +167,12 @@ defaults() {
 	CONFIG=
 	# Do we need to upload all the files automatically?
 	UPLOAD=0
-	# In case if newsmangler isn't in the PATH - user needs to specify where to find it
-	PATH_TO_MANGLER=
+	# In case if newsmangler/sanguinews isn't in the PATH - user needs to specify where to find it
+	PATH_TO_UPLOADER=
+	# Used to store newsmangler's nzb name
+	NEWSMANGLER_NZB=
+	# Used to store sanguinews' nzb name
+	SANGUINEWS_NZB=
 }
 # Generate .nfo header
 generate_nfo_header() {
@@ -245,7 +250,7 @@ genpasswd() {
 
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
-	echo "Rar&Par script version 0.84. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
+	echo "Rar&Par script version 0.85. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
 	echo -e "Comes with ABSOLUTELY NO WARRANTY. Distributed under GPL v2 license(\033[4mhttp://www.gnu.org/licenses/gpl-2.0.txt\033[0m).\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
@@ -283,7 +288,7 @@ show_help() {
 	echo -e "\t-U\t\tUpload processed files automatically."
 	echo -e "\t-v <MB>\t\tRar volume size in megabytes. Default:  \033[1m50\033[0m"
 	echo -e "\t-V\t\tBe verbose."
-	echo -e "\t-X <path>\tFull path to newsmangler eXecutable.\n"
+	echo -e "\t-X <path>\tFull path to sanguinews(or newsmangler) eXecutable.\n"
 }
 # This function is used to remove incomplete files in case script quit unexpectedly
 cleanup() {
@@ -431,7 +436,7 @@ while [[ $1 = -* ]]; do
 		 shift
 		 ;;
 		-X)
-		 PATH_TO_MANGLER="$2"
+		 PATH_TO_UPLOADER="$2"
 		 shift 2
 		 ;;
 		*)
@@ -483,15 +488,19 @@ fi
 # Check if newsmangler binary was specified
 if (( $UPLOAD==1 ))
 then
-	if [ -z "$PATH_TO_MANGLER" ] && ! type mangler.py > /dev/null 2>&1
+	if [ -z "$PATH_TO_UPLOADER" ] && [ [ ! type mangler.py > /dev/null 2>&1 ] || [ type sanguinews.rb  > /dev/null 2>&1 ] ]
 	then
-		echo "Error: Please specify the path to newsmangler executable file."
+		echo "Error: Please specify the path to sanguinews' (or newsmangler's) executable file."
 		echo "Upload not possible. Quiting..."
 		exit 1
 	fi
-	if [ -z "$PATH_TO_MANGLER" ] && type mangler.py > /dev/null 2>&1
+	if [ -z "$PATH_TO_UPLOADER" ] && type mangler.py > /dev/null 2>&1
 	then
-		PATH_TO_MANGLER="mangler.py"
+		PATH_TO_UPLOADER="mangler.py"
+	fi
+	if [ -z "$PATH_TO_UPLOADER" ] && type sanguinews.rb > /dev/null 2>&1
+	then
+		PATH_TO_UPLOADER="sanguinews.rb"
 	fi
 fi
 
@@ -613,7 +622,7 @@ then
 				then
 					mv "${OUTPUT_DIR}${FILENAME}"/"${ORIGINAL_NAME}.nfo" /tmp/
 				fi
-				"$PATH_TO_MANGLER" "${OUTPUT_DIR}${FILENAME}"
+				"$PATH_TO_UPLOADER" "${OUTPUT_DIR}${FILENAME}"
 				if (( $CRYPTMODE==1 ))
 				then
 					mv /tmp/"${ORIGINAL_NAME}.nfo" "${OUTPUT_DIR}${FILENAME}"/
@@ -621,6 +630,9 @@ then
 				# move nzb to the output directory
 				NEWSMANGLER_NZB=$(echo -n "newsmangler_${FILENAME}.nzb" | sed -e 's/ /_/g' )
 				[ -e $NEWSMANGLER_NZB ] && mv $NEWSMANGLER_NZB "${OUTPUT_DIR}${FILENAME}"/${NEWSMANGLER_NZB#newsmangler_}
+				# move nzb to the output directory
+				SANGUINEWS_NZB=$(echo -n "sanguinews_${FILENAME}.nzb" | sed -e 's/ /_/g' )
+				[ -e $SANGUINEWS_NZB ] && mv $SANGUINEWS_NZB "${OUTPUT_DIR}${FILENAME}"/${SANGUINEWS_NZB#sanguinews_}
 			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
@@ -720,7 +732,7 @@ else
 				then
 					mv "${OUTPUT_DIR}${FILENAME}"/"${ORIGINAL_NAME}.nfo" /tmp/
 				fi
-				"$PATH_TO_MANGLER" "${OUTPUT_DIR}${FILENAME}"
+				"$PATH_TO_UPLOADER" "${OUTPUT_DIR}${FILENAME}"
 				if (( $CRYPTMODE==1 ))
 				then
 					mv /tmp/"${ORIGINAL_NAME}.nfo" "${OUTPUT_DIR}${FILENAME}"/
@@ -728,6 +740,9 @@ else
 				# move nzb to the output directory
 				NEWSMANGLER_NZB=$(echo -n "newsmangler_${FILENAME}.nzb" | sed -e 's/ /_/g' )
 				[ -e $NEWSMANGLER_NZB ] && mv $NEWSMANGLER_NZB "${OUTPUT_DIR}${FILENAME}"/${NEWSMANGLER_NZB#newsmangler_}
+				# move nzb to the output directory
+				SANGUINEWS_NZB=$(echo -n "sanguinews_${FILENAME}.nzb" | sed -e 's/ /_/g' )
+				[ -e $SANGUINEWS_NZB ] && mv $SANGUINEWS_NZB "${OUTPUT_DIR}${FILENAME}"/${SANGUINEWS_NZB#sanguinews_}
 			fi
 			# Store rared files in separate directory?
 			if (( $DIRECTORIES==0 )); then
