@@ -349,6 +349,10 @@ while [[ $1 = -* ]]; do
 		 show_help
 		 exit
 		 ;;
+		-i)
+		 INTERACTIVE=1
+		 shift
+		 ;;
 		-l)
 		 LIMIT=1
 		 shift
@@ -586,17 +590,14 @@ then
 	if (($(find -L ${MAXDEPTH} -type d -name '*' ! -name '.*' | wc -l) > 0)); then
 		if (( $INTERACTIVE == 1 ))
 		then
-			find -L ${MAXDEPTH} -type d -name "*" ! -name ".*" | sed -e 's/^\.//g' -e 's/^\///g'
-			while [ -z $ANSWER ]
-			do
-				echo "Do you want to process these directories? [y/N]"
-				read ANSWER
-				if [ "$ANSWER" != "y" ] && [ "$ANSWER" != "Y" ] && [ "$ANSWER" != "yes" ]
-				then
-					echo "As you wish. Aborting..."
-					exit
-				fi
-			done
+			find -L ${MAXDEPTH} -type d -name "*" ! -name ".*" | sed -e 's/^\.//g' -e 's/^\///g' | sort
+			echo "Do you want to process these directories? [y/N]"
+			read ANSWER
+			if [ "$ANSWER" != "y" ] && [ "$ANSWER" != "Y" ] && [ "$ANSWER" != "yes" ]
+			then
+				echo "As you wish. Aborting..."
+				exit
+			fi
 		fi
 		while read DIRECTORY_TO_PROCESS; do
 			echo "Processing: $DIRECTORY_TO_PROCESS"
@@ -668,17 +669,14 @@ else
 	if (($(find . ${MAXDEPTH} -type f \( ! -iname ".*" ${EXCLUDE_LIST}\) -size +${MINIMUMS}M | wc -l) > 0)); then
 		if (( $INTERACTIVE == 1 ))
 		then
-			find . ${MAXDEPTH} -type f \( ! -iname ".*" ${EXCLUDE_LIST}\) -size +${MINIMUMS}M | sed -e 's/^\.//g' -e 's/^\///g'
-			while [ -z $ANSWER ]
-			do
-				echo "Do you want to process these files? [y/N]"
-				read ANSWER
-				if [ "$ANSWER" != "y" ] && [ "$ANSWER" != "Y" ] && [ "$ANSWER" != "yes" ]
-				then
-					echo "As you wish. Aborting..."
-					exit
-				fi
-			done
+			find . ${MAXDEPTH} -type f \( ! -iname ".*" ${EXCLUDE_LIST}\) -size +${MINIMUMS}M | sed -e 's/^\.//g' -e 's/^\///g' | sort
+			echo "Do you want to process these files? [y/N]"
+			read ANSWER
+			if [ "$ANSWER" != "y" ] && [ "$ANSWER" != "Y" ] && [ "$ANSWER" != "yes" ]
+			then
+				echo "As you wish. Aborting..."
+				exit
+			fi
 		fi
 		while read FILE_TO_PROCESS; do
 			echo "Processing: $FILE_TO_PROCESS"
