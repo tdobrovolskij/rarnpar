@@ -176,6 +176,8 @@ defaults() {
 	SANGUINEWS_NZB=
 	# Require confirmation before processing starts?
 	INTERACTIVE=0
+	# Answer from the use
+	ANSWER=
 }
 # Generate .nfo header
 generate_nfo_header() {
