@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ########################################################################
+# 2013-11-15: Interactive mode added; version 0.86
 # 2013-11-02: Sanguinews is now supported. version 0.85
 # 2013-10-31: Removed misleading "broken pipe" messages in genpasswd function. version 0.84
 # 2013-10-31: Set password option was broken. Fixed; version 0.83
@@ -173,6 +174,8 @@ defaults() {
 	NEWSMANGLER_NZB=
 	# Used to store sanguinews' nzb name
 	SANGUINEWS_NZB=
+	# Require confirmation before processing starts?
+	INTERACTIVE=0
 }
 # Generate .nfo header
 generate_nfo_header() {
@@ -250,7 +253,7 @@ genpasswd() {
 
 # Simple help. Maybe there is a better way to do this, but this should be fine for a time being.
 show_help() {
-	echo "Rar&Par script version 0.85. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
+	echo "Rar&Par script version 0.86. Copyright (C) 2011-2013 Tadeus Dobrovolskij."
 	echo -e "Comes with ABSOLUTELY NO WARRANTY. Distributed under GPL v2 license(\033[4mhttp://www.gnu.org/licenses/gpl-2.0.txt\033[0m).\n"
 	echo "Script helps you prepare your files for Usenet. Each file in the current directory is archived with RAR, then par2 files are created."
 	echo -e "Must have par2 and rar installed (obviously).\n"
@@ -266,6 +269,7 @@ show_help() {
 	echo -e "\t-D <dir>\tStarting directory."
 	echo -e "\t-e <expr>\tComma separated list of expressions to exclude. Example: \"*avi\",\"*mpg\" to exclude all avi and mpg files. File mode only."
 	echo -e "\t-h\t\tDisplay this message. Same as '--help'."
+	echo -e "\t-i\t\tInteractive. Require confirmation before processing."
 	echo -e "\t-l\t\tLimit size of par2 recovery files (Don't use both -u and -l)."
 	echo -e "\t-m <0..5>\tRar compression level (0-store...5-maximal). Default: \033[1m0\033[0m"
 	echo -e "\t-M <algorithm>\tCryptorenaming mode. Choose from sha1, sha224, sha256, sha384, sha512, md5 algorithms."
@@ -580,6 +584,20 @@ then
 	# We need some other directory name, because otherwise we will encounter conflicts
 	if [ -z $NAME_SUFFIX ] && [ -z $NAME_PREFIX ]; then NAME_SUFFIX="-rnp"; fi
 	if (($(find -L ${MAXDEPTH} -type d -name '*' ! -name '.*' | wc -l) > 0)); then
+		if (( $INTERACTIVE == 1 ))
+		then
+			find -L ${MAXDEPTH} -type d -name "*" ! -name ".*" | sed -e 's/^\.//g' -e 's/^\///g'
+			while [ -z $ANSWER ]
+			do
+				echo "Do you want to process these directories? [y/N]"
+				read ANSWER
+				if [ "$ANSWER" != "y" ] && [ "$ANSWER" != "Y" ] && [ "$ANSWER" != "yes" ]
+				then
+					echo "As you wish. Aborting..."
+					exit
+				fi
+			done
+		fi
 		while read DIRECTORY_TO_PROCESS; do
 			echo "Processing: $DIRECTORY_TO_PROCESS"
 			if [ -n "$RENAME_TO" ] && [ "$RECURSIVE" == "0" ]
@@ -648,6 +666,20 @@ else
 	RARC="${RARC} -ep"
 	(( $RECURSIVE == 1 )) && MAXDEPTH=""
 	if (($(find . ${MAXDEPTH} -type f \( ! -iname ".*" ${EXCLUDE_LIST}\) -size +${MINIMUMS}M | wc -l) > 0)); then
+		if (( $INTERACTIVE == 1 ))
+		then
+			find . ${MAXDEPTH} -type f \( ! -iname ".*" ${EXCLUDE_LIST}\) -size +${MINIMUMS}M | sed -e 's/^\.//g' -e 's/^\///g'
+			while [ -z $ANSWER ]
+			do
+				echo "Do you want to process these files? [y/N]"
+				read ANSWER
+				if [ "$ANSWER" != "y" ] && [ "$ANSWER" != "Y" ] && [ "$ANSWER" != "yes" ]
+				then
+					echo "As you wish. Aborting..."
+					exit
+				fi
+			done
+		fi
 		while read FILE_TO_PROCESS; do
 			echo "Processing: $FILE_TO_PROCESS"
 			if (( $RECURSIVE == 1 ))
